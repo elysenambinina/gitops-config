@@ -1,0 +1,17 @@
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: node-exporter-host-access
+  namespace: kyverno
+  annotations:
+    justification: "node-exporter lit les métriques du nœud (CPU, disque, réseau)."
+spec:
+  exceptions:
+    - policyName: disallow-host-access
+      ruleNames: [host-namespaces, host-path, autogen-host-namespaces, autogen-host-path]
+  match:
+    any:
+      - resources:
+          kinds: [Pod, DaemonSet]
+          namespaces: [monitoring]
+          names: ["*node-exporter*"]

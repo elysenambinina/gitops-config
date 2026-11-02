@@ -1,0 +1,22 @@
+# Politique 11 : contexte de sécurité par défaut (ajouté seulement s'il est absent)
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: mutate-default-security-context
+  annotations:
+    pod-policies.kyverno.io/autogen-controllers: none
+spec:
+  rules:
+    - name: drop-capabilities
+      match:
+        any:
+          - resources: { kinds: [Pod], namespaces: ["demo-*"] }
+      mutate:
+        patchStrategicMerge:
+          spec:
+            containers:
+              - (name): "*"
+                securityContext:
+                  +(allowPrivilegeEscalation): false
+                  +(capabilities):
+                    drop: ["ALL"]

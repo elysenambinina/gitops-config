@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: applications
+  namespace: argocd
+spec:
+  description: Applications métier, périmètre restreint
+  sourceRepos:
+    - https://github.com/elysenambinina/gitops-config.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: 'demo-*'
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+  namespaceResourceBlacklist:
+    - group: ''
+      kind: ResourceQuota
+    - group: rbac.authorization.k8s.io
+      kind: '*'

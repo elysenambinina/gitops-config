@@ -1,0 +1,26 @@
+# Politique 5 : imposer des requêtes et une limite mémoire (NSA/CISA)
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-requests-limits
+spec:
+  background: true
+  rules:
+    - name: requests-limits
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: ["demo-*"]
+      validate:
+        failureAction: Audit
+        message: "Chaque conteneur doit déclarer requests (cpu, mémoire) et une limite mémoire."
+        pattern:
+          spec:
+            containers:
+              - resources:
+                  requests:
+                    cpu: "?*"
+                    memory: "?*"
+                  limits:
+                    memory: "?*"

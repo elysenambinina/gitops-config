@@ -1,0 +1,43 @@
+# Politiques 6 et 7 : étiquette explicite, pas de latest, images du registre ECR uniquement
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-images
+spec:
+  background: true
+  rules:
+    - name: require-image-tag
+      match:
+        any:
+          - resources: { kinds: [Pod], namespaces: ["demo-*"] }
+      validate:
+        failureAction: Audit
+        message: "Chaque image doit avoir une étiquette explicite."
+        pattern:
+          spec:
+            containers:
+              - image: "*:*"
+    - name: disallow-latest-tag
+      match:
+        any:
+          - resources: { kinds: [Pod], namespaces: ["demo-*"] }
+      validate:
+        failureAction: Audit
+        message: "L'étiquette 'latest' est interdite."
+        pattern:
+          spec:
+            containers:
+              - image: "!*:latest"
+    - name: allowed-registry
+      match:
+        any:
+          - resources: { kinds: [Pod], namespaces: ["demo-*"] }
+      validate:
+        failureAction: Audit
+        message: "Seules les images du registre ECR de l'université sont autorisées."
+        pattern:
+          spec:
+            =(initContainers):
+              - image: "043262085702.dkr.ecr.eu-west-3.amazonaws.com/*"
+            containers:
+              - image: "043262085702.dkr.ecr.eu-west-3.amazonaws.com/*"

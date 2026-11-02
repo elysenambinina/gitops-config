@@ -1,0 +1,18 @@
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: kube-bench-audit
+  namespace: kyverno
+  annotations:
+    justification: "kube-bench lit la configuration du nœud pour le contrôle CIS."
+spec:
+  exceptions:
+    - policyName: disallow-host-access
+      ruleNames: [host-namespaces, host-path, autogen-host-namespaces, autogen-host-path]
+    - policyName: require-run-as-non-root
+      ruleNames: [run-as-non-root, autogen-run-as-non-root]
+  match:
+    any:
+      - resources:
+          kinds: [Pod, Job]
+          namespaces: [kube-bench]

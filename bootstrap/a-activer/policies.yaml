@@ -1,0 +1,20 @@
+# À déplacer dans bootstrap/apps/ à l'étape « Politiques » du ROADMAP
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: policies
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/elysenambinina/gitops-config.git
+    targetRevision: main
+    path: policies/kyverno
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }

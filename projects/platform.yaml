@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform
+  namespace: argocd
+spec:
+  description: Composants de la plateforme (Kyverno, secrets, supervision)
+  sourceRepos:
+    - https://github.com/elysenambinina/gitops-config.git
+    - https://kyverno.github.io/kyverno/
+    - https://charts.external-secrets.io
+    - https://prometheus-community.github.io/helm-charts
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: '*'
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'

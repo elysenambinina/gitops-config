@@ -1,0 +1,160 @@
+# Un pod conforme à toutes les règles, puis un pod par défaut (chacun n'enfreint qu'une règle)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-conforme
+  namespace: demo-dev
+  labels: { app.kubernetes.io/name: test, owner: dsin }
+spec:
+  securityContext: { runAsNonRoot: true, runAsUser: 10001 }
+  containers:
+    - name: app
+      image: 043262085702.dkr.ecr.eu-west-3.amazonaws.com/app-demo:sha-test
+      securityContext: { readOnlyRootFilesystem: true, allowPrivilegeEscalation: false }
+      resources:
+        requests: { cpu: 50m, memory: 64Mi }
+        limits: { memory: 128Mi }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-privilegie
+  namespace: demo-dev
+  labels: { app.kubernetes.io/name: test, owner: dsin }
+spec:
+  securityContext: { runAsNonRoot: true, runAsUser: 10001 }
+  containers:
+    - name: app
+      image: 043262085702.dkr.ecr.eu-west-3.amazonaws.com/app-demo:sha-test
+      securityContext: { privileged: true, readOnlyRootFilesystem: true }
+      resources:
+        requests: { cpu: 50m, memory: 64Mi }
+        limits: { memory: 128Mi }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-root
+  namespace: demo-dev
+  labels: { app.kubernetes.io/name: test, owner: dsin }
+spec:
+  containers:
+    - name: app
+      image: 043262085702.dkr.ecr.eu-west-3.amazonaws.com/app-demo:sha-test
+      securityContext: { readOnlyRootFilesystem: true }
+      resources:
+        requests: { cpu: 50m, memory: 64Mi }
+        limits: { memory: 128Mi }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-host-network
+  namespace: demo-dev
+  labels: { app.kubernetes.io/name: test, owner: dsin }
+spec:
+  hostNetwork: true
+  securityContext: { runAsNonRoot: true, runAsUser: 10001 }
+  containers:
+    - name: app
+      image: 043262085702.dkr.ecr.eu-west-3.amazonaws.com/app-demo:sha-test
+      securityContext: { readOnlyRootFilesystem: true }
+      resources:
+        requests: { cpu: 50m, memory: 64Mi }
+        limits: { memory: 128Mi }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-host-path
+  namespace: demo-dev
+  labels: { app.kubernetes.io/name: test, owner: dsin }
+spec:
+  securityContext: { runAsNonRoot: true, runAsUser: 10001 }
+  volumes:
+    - name: hote
+      hostPath: { path: /etc }
+  containers:
+    - name: app
+      image: 043262085702.dkr.ecr.eu-west-3.amazonaws.com/app-demo:sha-test
+      securityContext: { readOnlyRootFilesystem: true }
+      resources:
+        requests: { cpu: 50m, memory: 64Mi }
+        limits: { memory: 128Mi }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-sans-limites
+  namespace: demo-dev
+  labels: { app.kubernetes.io/name: test, owner: dsin }
+spec:
+  securityContext: { runAsNonRoot: true, runAsUser: 10001 }
+  containers:
+    - name: app
+      image: 043262085702.dkr.ecr.eu-west-3.amazonaws.com/app-demo:sha-test
+      securityContext: { readOnlyRootFilesystem: true }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-latest
+  namespace: demo-dev
+  labels: { app.kubernetes.io/name: test, owner: dsin }
+spec:
+  securityContext: { runAsNonRoot: true, runAsUser: 10001 }
+  containers:
+    - name: app
+      image: 043262085702.dkr.ecr.eu-west-3.amazonaws.com/app-demo:latest
+      securityContext: { readOnlyRootFilesystem: true }
+      resources:
+        requests: { cpu: 50m, memory: 64Mi }
+        limits: { memory: 128Mi }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-registre-externe
+  namespace: demo-dev
+  labels: { app.kubernetes.io/name: test, owner: dsin }
+spec:
+  securityContext: { runAsNonRoot: true, runAsUser: 10001 }
+  containers:
+    - name: app
+      image: nginx:1.27
+      securityContext: { readOnlyRootFilesystem: true }
+      resources:
+        requests: { cpu: 50m, memory: 64Mi }
+        limits: { memory: 128Mi }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-ecriture-racine
+  namespace: demo-dev
+  labels: { app.kubernetes.io/name: test, owner: dsin }
+spec:
+  securityContext: { runAsNonRoot: true, runAsUser: 10001 }
+  containers:
+    - name: app
+      image: 043262085702.dkr.ecr.eu-west-3.amazonaws.com/app-demo:sha-test
+      securityContext: { readOnlyRootFilesystem: false }
+      resources:
+        requests: { cpu: 50m, memory: 64Mi }
+        limits: { memory: 128Mi }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-sans-labels
+  namespace: demo-dev
+  labels: { app.kubernetes.io/name: test }
+spec:
+  securityContext: { runAsNonRoot: true, runAsUser: 10001 }
+  containers:
+    - name: app
+      image: 043262085702.dkr.ecr.eu-west-3.amazonaws.com/app-demo:sha-test
+      securityContext: { readOnlyRootFilesystem: true }
+      resources:
+        requests: { cpu: 50m, memory: 64Mi }
+        limits: { memory: 128Mi }

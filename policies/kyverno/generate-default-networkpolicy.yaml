@@ -1,0 +1,60 @@
+# Politique 10 : NetworkPolicy de refus par défaut dans chaque espace demo-*
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kyverno-generate-networkpolicies
+  labels:
+    rbac.kyverno.io/aggregate-to-background-controller: "true"
+    rbac.kyverno.io/aggregate-to-admission-controller: "true"
+rules:
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["networkpolicies"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: generate-default-networkpolicy
+spec:
+  generateExisting: true
+  rules:
+    - name: default-deny
+      match:
+        any:
+          - resources:
+              kinds: [Namespace]
+              names: ["demo-*"]
+      generate:
+        apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        name: default-deny-all
+        namespace: "{{request.object.metadata.name}}"
+        synchronize: true
+        data:
+          spec:
+            podSelector: {}
+            policyTypes: [Ingress, Egress]
+    - name: allow-dns
+      match:
+        any:
+          - resources:
+              kinds: [Namespace]
+              names: ["demo-*"]
+      generate:
+        apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        name: allow-dns-egress
+        namespace: "{{request.object.metadata.name}}"
+        synchronize: true
+        data:
+          spec:
+            podSelector: {}
+            policyTypes: [Egress]
+            egress:
+              - to:
+                  - namespaceSelector:
+                      matchLabels:
+                        kubernetes.io/metadata.name: kube-system
+                ports:
+                  - { protocol: UDP, port: 53 }
+                  - { protocol: TCP, port: 53 }

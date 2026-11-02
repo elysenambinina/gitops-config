@@ -1,0 +1,32 @@
+# Politiques 8 et 9 : système de fichiers en lecture seule, labels obligatoires
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-hardening-labels
+spec:
+  background: true
+  rules:
+    - name: read-only-root-filesystem
+      match:
+        any:
+          - resources: { kinds: [Pod], namespaces: ["demo-*"] }
+      validate:
+        failureAction: Audit
+        message: "readOnlyRootFilesystem doit valoir true."
+        pattern:
+          spec:
+            containers:
+              - securityContext:
+                  readOnlyRootFilesystem: true
+    - name: required-labels
+      match:
+        any:
+          - resources: { kinds: [Pod], namespaces: ["demo-*"] }
+      validate:
+        failureAction: Audit
+        message: "Les labels 'app.kubernetes.io/name' et 'owner' sont obligatoires."
+        pattern:
+          metadata:
+            labels:
+              app.kubernetes.io/name: "?*"
+              owner: "?*"

@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: app-demo
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  goTemplate: true
+  generators:
+    - list:
+        elements:
+          - env: dev
+          - env: staging
+          - env: prod
+  template:
+    metadata:
+      name: 'app-demo-{{.env}}'
+    spec:
+      project: applications
+      source:
+        repoURL: https://github.com/elysenambinina/gitops-config.git
+        targetRevision: main
+        path: 'apps/app-demo/overlays/{{.env}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'demo-{{.env}}'
+      syncPolicy:
+        automated: { prune: true, selfHeal: true }
+        syncOptions: [CreateNamespace=true]

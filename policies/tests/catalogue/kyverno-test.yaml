@@ -1,0 +1,33 @@
+# Lancer avec : kyverno test policies/tests/
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: catalogue
+policies:
+  - ../../kyverno/disallow-privileged-containers.yaml
+  - ../../kyverno/require-run-as-non-root.yaml
+  - ../../kyverno/disallow-host-access.yaml
+  - ../../kyverno/require-requests-limits.yaml
+  - ../../kyverno/restrict-images.yaml
+  - ../../kyverno/require-hardening-labels.yaml
+resources:
+  - resources.yaml
+results:
+  - { policy: disallow-privileged-containers, rule: privileged-containers, kind: Pod, resources: [pod-conforme], result: pass }
+  - { policy: disallow-privileged-containers, rule: privileged-containers, kind: Pod, resources: [pod-privilegie], result: fail }
+  - { policy: require-run-as-non-root, rule: run-as-non-root, kind: Pod, resources: [pod-conforme], result: pass }
+  - { policy: require-run-as-non-root, rule: run-as-non-root, kind: Pod, resources: [pod-root], result: fail }
+  - { policy: disallow-host-access, rule: host-namespaces, kind: Pod, resources: [pod-conforme], result: pass }
+  - { policy: disallow-host-access, rule: host-namespaces, kind: Pod, resources: [pod-host-network], result: fail }
+  - { policy: disallow-host-access, rule: host-path, kind: Pod, resources: [pod-conforme], result: pass }
+  - { policy: disallow-host-access, rule: host-path, kind: Pod, resources: [pod-host-path], result: fail }
+  - { policy: require-requests-limits, rule: requests-limits, kind: Pod, resources: [pod-conforme], result: pass }
+  - { policy: require-requests-limits, rule: requests-limits, kind: Pod, resources: [pod-sans-limites], result: fail }
+  - { policy: restrict-images, rule: disallow-latest-tag, kind: Pod, resources: [pod-conforme], result: pass }
+  - { policy: restrict-images, rule: disallow-latest-tag, kind: Pod, resources: [pod-latest], result: fail }
+  - { policy: restrict-images, rule: allowed-registry, kind: Pod, resources: [pod-conforme], result: pass }
+  - { policy: restrict-images, rule: allowed-registry, kind: Pod, resources: [pod-registre-externe], result: fail }
+  - { policy: require-hardening-labels, rule: read-only-root-filesystem, kind: Pod, resources: [pod-conforme], result: pass }
+  - { policy: require-hardening-labels, rule: read-only-root-filesystem, kind: Pod, resources: [pod-ecriture-racine], result: fail }
+  - { policy: require-hardening-labels, rule: required-labels, kind: Pod, resources: [pod-conforme], result: pass }
+  - { policy: require-hardening-labels, rule: required-labels, kind: Pod, resources: [pod-sans-labels], result: fail }

@@ -1,0 +1,29 @@
+name: validation
+on: [pull_request]
+permissions:
+  contents: read
+jobs:
+  politiques:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer Kyverno CLI (dernière version)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(gh release view -R kyverno/kyverno --json tagName -q .tagName)
+          curl -sSL -o kyverno.tar.gz \
+            "https://github.com/kyverno/kyverno/releases/download/${VERSION}/kyverno-cli_${VERSION}_linux_x86_64.tar.gz"
+          tar -xzf kyverno.tar.gz kyverno && sudo mv kyverno /usr/local/bin/
+          kyverno version
+
+      - name: Tests des politiques
+        run: kyverno test policies/tests/
+
+      - name: Manifestes conformes aux politiques
+        run: |
+          for env in dev staging prod; do
+            kustomize build apps/app-demo/overlays/$env > /tmp/$env.yaml
+            kyverno apply policies/kyverno/ --resource /tmp/$env.yaml
+          done

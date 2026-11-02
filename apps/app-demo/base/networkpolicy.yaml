@@ -1,0 +1,13 @@
+# Autorise uniquement l'entrée sur le port 8080 ; le reste est fermé par la politique Kyverno n° 10
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-http-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: app-demo
+  policyTypes: [Ingress]
+  ingress:
+    - ports:
+        - { protocol: TCP, port: 8080 }

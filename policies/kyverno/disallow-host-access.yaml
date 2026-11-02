@@ -1,0 +1,36 @@
+# Politiques 3 et 4 : pas d'accès aux espaces de noms de l'hôte, pas de volume hostPath (PSS Baseline)
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-host-access
+  annotations:
+    policies.kyverno.io/category: Pod Security Standards (Baseline)
+    policies.kyverno.io/severity: high
+spec:
+  background: true
+  rules:
+    - name: host-namespaces
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      validate:
+        failureAction: Audit
+        message: "hostNetwork, hostPID et hostIPC sont interdits."
+        pattern:
+          spec:
+            =(hostNetwork): "false"
+            =(hostPID): "false"
+            =(hostIPC): "false"
+    - name: host-path
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      validate:
+        failureAction: Audit
+        message: "Les volumes hostPath sont interdits."
+        pattern:
+          spec:
+            =(volumes):
+              - X(hostPath): "null"

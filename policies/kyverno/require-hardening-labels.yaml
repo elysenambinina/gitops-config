@@ -11,7 +11,7 @@ spec:
         any:
           - resources: { kinds: [Pod], namespaces: ["demo-*"] }
       validate:
-        failureAction: Audit
+        failureAction: Enforce
         message: "readOnlyRootFilesystem doit valoir true."
         pattern:
           spec:
@@ -23,7 +23,7 @@ spec:
         any:
           - resources: { kinds: [Pod], namespaces: ["demo-*"] }
       validate:
-        failureAction: Audit
+        failureAction: Enforce
         message: "Les labels 'app.kubernetes.io/name' et 'owner' sont obligatoires."
         pattern:
           metadata:

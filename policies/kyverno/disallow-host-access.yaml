@@ -15,7 +15,7 @@ spec:
           - resources:
               kinds: [Pod]
       validate:
-        failureAction: Audit
+        failureAction: Enforce
         message: "hostNetwork, hostPID et hostIPC sont interdits."
         pattern:
           spec:
@@ -28,7 +28,7 @@ spec:
           - resources:
               kinds: [Pod]
       validate:
-        failureAction: Audit
+        failureAction: Enforce
         message: "Les volumes hostPath sont interdits."
         pattern:
           spec:

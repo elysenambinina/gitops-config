@@ -15,7 +15,7 @@ spec:
           - resources:
               kinds: [Pod]
       validate:
-        failureAction: Audit
+        failureAction: Enforce
         message: "runAsNonRoot doit valoir true, au niveau du pod ou de chaque conteneur."
         anyPattern:
           - spec:

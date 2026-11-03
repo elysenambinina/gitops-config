@@ -13,7 +13,7 @@ spec:
               kinds: [Pod]
               namespaces: ["demo-*"]
       validate:
-        failureAction: Audit
+        failureAction: Enforce
         message: "Chaque conteneur doit déclarer requests (cpu, mémoire) et une limite mémoire."
         pattern:
           spec:

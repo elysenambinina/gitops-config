@@ -2,14 +2,16 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: demo-dev
 resources:
-  - ../../base
+- ../../base
 images:
-  - name: app-demo
-    newName: 043262085702.dkr.ecr.eu-west-3.amazonaws.com/app-demo
-    newTag: "a-remplacer-par-la-ci"
+- name: app-demo
+  newName: 043262085702.dkr.ecr.eu-west-3.amazonaws.com/app-demo
+  newTag: sha-aba6c33
 patches:
-  - target: { kind: Deployment, name: app-demo }
-    patch: |-
-      - op: replace
-        path: /spec/replicas
-        value: 1
+- patch: |-
+    - op: replace
+      path: /spec/replicas
+      value: 1
+  target:
+    kind: Deployment
+    name: app-demo

@@ -1,0 +1,21 @@
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: composants-eks
+  namespace: kyverno
+  annotations:
+    justification: "Modules complémentaires gérés par AWS (réseau VPC CNI, kube-proxy, Pod Identity, DNS) : ils ont besoin d'accéder au réseau et au noyau du nœud."
+spec:
+  exceptions:
+    - policyName: disallow-host-access
+      ruleNames: [host-namespaces, host-path, autogen-host-namespaces, autogen-host-path]
+    - policyName: disallow-privileged-containers
+      ruleNames: [privileged-containers, autogen-privileged-containers]
+    - policyName: require-run-as-non-root
+      ruleNames: [run-as-non-root, autogen-run-as-non-root]
+  match:
+    any:
+      - resources:
+          kinds: [Pod, DaemonSet, Deployment, ReplicaSet]
+          namespaces: [kube-system]
+          names: ["aws-node*", "kube-proxy*", "eks-pod-identity-agent*", "coredns*"]

@@ -6,7 +6,7 @@ resources:
 images:
 - name: app-demo
   newName: 043262085702.dkr.ecr.eu-west-3.amazonaws.com/app-demo
-  newTag: sha-aba6c33
+  newTag: sha-68a827d
 patches:
 - patch: |-
     - op: replace

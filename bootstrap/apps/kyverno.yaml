@@ -1,4 +1,4 @@
-# À déplacer dans bootstrap/apps/ à l'étape « Politiques » du ROADMAP
+# Remplace bootstrap/apps/kyverno.yaml à l'étape « Supervision » (après l'installation de Prometheus)
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -17,10 +17,16 @@ spec:
       valuesObject:
         admissionController:
           replicas: 3
+          serviceMonitor:
+            enabled: true
         backgroundController:
           replicas: 2
+          serviceMonitor:
+            enabled: true
         reportsController:
           replicas: 2
+          serviceMonitor:
+            enabled: true
         cleanupController:
           replicas: 2
         features:

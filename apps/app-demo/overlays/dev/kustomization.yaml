@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: demo-dev
 resources:
 - ../../base
+- external-secret.yaml
 images:
 - name: app-demo
   newName: 043262085702.dkr.ecr.eu-west-3.amazonaws.com/app-demo
@@ -15,3 +16,4 @@ patches:
   target:
     kind: Deployment
     name: app-demo
+- path: secret-env-patch.yaml

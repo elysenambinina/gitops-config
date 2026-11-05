@@ -1,0 +1,67 @@
+name: promotion
+# Promeut la version déjà validée : dev -> staging, puis staging -> prod (approbation obligatoire pour prod)
+on:
+  workflow_dispatch:
+    inputs:
+      vers:
+        description: "Environnement cible"
+        type: choice
+        options: [staging, prod]
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency: promotion
+
+jobs:
+  promouvoir:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.vers }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Version à promouvoir
+        id: version
+        run: |
+          case "${{ inputs.vers }}" in staging) src=dev ;; prod) src=staging ;; esac
+          image=$(yq '.images[0].newName + ":" + .images[0].newTag' apps/app-demo/overlays/$src/kustomization.yaml)
+          echo "source=$src"   >> "$GITHUB_OUTPUT"
+          echo "image=$image"  >> "$GITHUB_OUTPUT"
+          echo "tag=${image##*:}" >> "$GITHUB_OUTPUT"
+          echo "Promotion de $image : $src -> ${{ inputs.vers }}"
+
+      - name: Mise à jour de l'overlay
+        run: |
+          cd apps/app-demo/overlays/${{ inputs.vers }}
+          kustomize edit set image app-demo=${{ steps.version.outputs.image }}
+
+      - name: Installer Kyverno CLI (dernière version)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(gh release view -R kyverno/kyverno --json tagName -q .tagName)
+          curl -sSL -o kyverno.tar.gz \
+            "https://github.com/kyverno/kyverno/releases/download/${VERSION}/kyverno-cli_${VERSION}_linux_x86_64.tar.gz"
+          tar -xzf kyverno.tar.gz kyverno && sudo mv kyverno /usr/local/bin/ && rm kyverno.tar.gz
+
+      - name: Contrôle des politiques
+        run: |
+          kustomize build apps/app-demo/overlays/${{ inputs.vers }} > /tmp/manifestes.yaml
+          kyverno apply policies/kyverno/ --resource /tmp/manifestes.yaml
+
+      - name: Pull request et fusion
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet; then echo "${{ inputs.vers }} est déjà à jour."; exit 0; fi
+          BRANCHE="promotion-${{ inputs.vers }}-${{ steps.version.outputs.tag }}"
+          MESSAGE="deploy(${{ inputs.vers }}): app-demo ${{ steps.version.outputs.tag }} (promue depuis ${{ steps.version.outputs.source }})"
+          git config user.name  "ci-bot"
+          git config user.email "ci-bot@users.noreply.github.com"
+          git switch -c "$BRANCHE"
+          git commit -qam "$MESSAGE"
+          git push -q -u origin "$BRANCHE"
+          gh pr create --title "$MESSAGE" --body "Promotion lancée par ${{ github.actor }} (workflow promotion, exécution ${{ github.run_id }})."
+          gh pr merge "$BRANCHE" --squash --delete-branch

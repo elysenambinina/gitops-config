@@ -1,0 +1,21 @@
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: acme-solver
+  namespace: kyverno
+  annotations:
+    justification: "Pod temporaire de cert-manager qui répond au défi HTTP-01 de Let's Encrypt (image quay.io, quelques secondes de vie)."
+spec:
+  exceptions:
+    - policyName: restrict-images
+      ruleNames: [allowed-registry]
+    - policyName: require-hardening-labels
+      ruleNames: [read-only-root-filesystem, required-labels]
+    - policyName: require-requests-limits
+      ruleNames: [requests-limits]
+  match:
+    any:
+      - resources:
+          kinds: [Pod]
+          namespaces: ["demo-*"]
+          names: ["cm-acme-http-solver-*"]

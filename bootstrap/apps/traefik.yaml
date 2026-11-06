@@ -25,11 +25,19 @@ spec:
             service.beta.kubernetes.io/aws-load-balancer-type: external
             service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
             service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
-            service.beta.kubernetes.io/aws-load-balancer-subnets: gitops-dev-public-eu-west-3a
-            service.beta.kubernetes.io/aws-load-balancer-eip-allocations: eipalloc-0982f0e75cae185e1
+            service.beta.kubernetes.io/aws-load-balancer-subnets: gitops-dev-public-eu-west-3a,gitops-dev-public-eu-west-3b,gitops-dev-public-eu-west-3c
+            service.beta.kubernetes.io/aws-load-balancer-eip-allocations: eipalloc-0982f0e75cae185e1,eipalloc-05b279bb481186238,eipalloc-0de7528f321a0f1fd
+            service.beta.kubernetes.io/aws-load-balancer-attributes: load_balancing.cross_zone.enabled=true
+        topologySpreadConstraints:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: ScheduleAnyway
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: traefik
   destination:
     server: https://kubernetes.default.svc
     namespace: traefik
   syncPolicy:
-    automated: { prune: true, selfHeal: true }
+    automated: {prune: true, selfHeal: true}
     syncOptions: [CreateNamespace=true]

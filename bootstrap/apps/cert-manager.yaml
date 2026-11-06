@@ -1,0 +1,25 @@
+# Certificats HTTPS Let's Encrypt, demandés et renouvelés automatiquement
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-3"
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
+spec:
+  project: platform
+  source:
+    repoURL: https://charts.jetstack.io
+    chart: cert-manager
+    targetRevision: "v1.21.3"
+    helm:
+      valuesObject:
+        crds:
+          enabled: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true, ServerSideApply=true]

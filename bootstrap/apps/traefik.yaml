@@ -1,0 +1,35 @@
+# Point d'entrée HTTP(S) des applications, exposé par un NLB sur l'IP fixe du socle
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: platform
+  source:
+    repoURL: https://traefik.github.io/charts
+    chart: traefik
+    targetRevision: "42.3.0"
+    helm:
+      valuesObject:
+        deployment:
+          replicas: 2
+        providers:
+          kubernetesIngress:
+            publishedService:
+              enabled: true
+        service:
+          annotations:
+            service.beta.kubernetes.io/aws-load-balancer-type: external
+            service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+            service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+            service.beta.kubernetes.io/aws-load-balancer-subnets: gitops-dev-public-eu-west-3a
+            service.beta.kubernetes.io/aws-load-balancer-eip-allocations: eipalloc-0982f0e75cae185e1
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: traefik
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true]

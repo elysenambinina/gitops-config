@@ -1,0 +1,20 @@
+# Publication de l'environnement staging en HTTPS (certificat Let's Encrypt obtenu par cert-manager)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-demo
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts: [staging.elyse-gitops.duckdns.org]
+      secretName: app-demo-tls
+  rules:
+    - host: staging.elyse-gitops.duckdns.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: app-demo, port: { number: 80 } }
